@@ -1,46 +1,57 @@
 on listener#valveCmd do
-  if [listener#valveCmd]=0 // emergency shut down
-    TimerSet,1,0 // stop any working timer
+  if [listener#valveCmd]=0
+    TimerSet,1,0
     TimerSet,2,0
     TimerSet,3,0
     TimerSet,4,0
-    GPIO,14,0 // stop any valves
+    GPIO,14,0
     GPIO,12,0
     GPIO,13,0
     GPIO,15,0
     Publish "Podlewacz/valve/state", 0
     Publish "Podlewacz/state", "Emergency shut-off"
   else
-    if [listener#valveCmd]<2600 // no more than 45 minutes
-      TaskValueSet 3,1,[listener#valveCmd]*1 // calculate weights
-      TaskValueSet 3,2,[listener#valveCmd]*1
+    if [listener#valveCmd]<2600
+      TaskValueSet 3,1,[listener#valveCmd]*0.1
+      TaskValueSet 3,2,[listener#valveCmd]*0.1
       TaskValueSet 3,3,[listener#valveCmd]*0.5
-      TaskValueSet 3,4,[listener#valveCmd]*0.3
-      GPIO,14,1
-      Publish "Podlewacz/valve/state", 9
-      Publish "Podlewacz/state", "Valve 1 open"
-      if [valves0#valve1]<2000
-        TimerSet,1,[valves0#valve1]
+      TaskValueSet 3,4,[listener#valveCmd]*0
+      Publish "Podlewacz/valve/state", 1
+      if [valves0#valve1]>=1
+        GPIO,14,1
+        Publish "Podlewacz/state", "Valve 1 open"
+        if [valves0#valve1]<2000
+          TimerSet,1,[valves0#valve1]
+        else
+          TimerSet,1,2000
+        endif
       else
-        TimerSet,1,2000
+        Publish "Podlewacz/state", "Valve 1 skipped"
+        TimerSet,1,3
       endif
     endif
   endif
 endon
 
 on Rules#Timer=1 do
-    GPIO,14,0
+  GPIO,14,0
+  if [valves0#valve2]>=1
     GPIO,12,1
     Publish "Podlewacz/state", "Valve 2 open"
     if [valves0#valve2]<2000
       TimerSet,2,[valves0#valve2]
     else
       TimerSet,2,2000
+      TimerSet,2,3
     endif
+  else
+    Publish "Podlewacz/state", "Valve 2 skipped"
+  endif
 endon
 
 on Rules#Timer=2 do
-    GPIO,12,0
+  GPIO,12,0
+  if [valves0#valve3]>=1
     GPIO,13,1
     Publish "Podlewacz/state", "Valve 3 open"
     if [valves0#valve3]<2000
@@ -48,10 +59,15 @@ on Rules#Timer=2 do
     else
       TimerSet,3,2000
     endif
+  else
+    Publish "Podlewacz/state", "Valve 3 skipped"
+    TimerSet,3,3
+  endif
 endon
 
 on Rules#Timer=3 do
-    GPIO,13,0
+  GPIO,13,0
+  if [valves0#valve4]>=1
     GPIO,15,1
     Publish "Podlewacz/state", "Valve 4 open"
     if [valves0#valve4]<2000
@@ -59,6 +75,10 @@ on Rules#Timer=3 do
     else
       TimerSet,4,2000
     endif
+  else
+    Publish "Podlewacz/state", "Valve 4 skipped"
+    TimerSet,4,3
+  endif
 endon
 
 on Rules#Timer=4 do

@@ -4,21 +4,21 @@ on listener#valveCmd do
     TimerSet,2,0
     TimerSet,3,0
     TimerSet,4,0
+    GPIO,5,0
+    GPIO,4,0
     GPIO,14,0
     GPIO,12,0
-    GPIO,13,0
-    GPIO,15,0
     Publish "Podlewacz/valve/state", 0
     Publish "Podlewacz/state", "Emergency shut-off"
   else
     if [listener#valveCmd]<2600
-      TaskValueSet 3,1,[listener#valveCmd]*0.1
-      TaskValueSet 3,2,[listener#valveCmd]*0.1
+      TaskValueSet 3,1,[listener#valveCmd]*1
+      TaskValueSet 3,2,[listener#valveCmd]*1
       TaskValueSet 3,3,[listener#valveCmd]*0.5
       TaskValueSet 3,4,[listener#valveCmd]*0
       Publish "Podlewacz/valve/state", 1
       if [valves0#valve1]>=1
-        GPIO,14,1
+        GPIO,5,1
         Publish "Podlewacz/state", "Valve 1 open"
         if [valves0#valve1]<2000
           TimerSet,1,[valves0#valve1]
@@ -34,9 +34,9 @@ on listener#valveCmd do
 endon
 
 on Rules#Timer=1 do
-  GPIO,14,0
+  GPIO,5,0
   if [valves0#valve2]>=1
-    GPIO,12,1
+    GPIO,4,1
     Publish "Podlewacz/state", "Valve 2 open"
     if [valves0#valve2]<2000
       TimerSet,2,[valves0#valve2]
@@ -50,9 +50,9 @@ on Rules#Timer=1 do
 endon
 
 on Rules#Timer=2 do
-  GPIO,12,0
+  GPIO,4,0
   if [valves0#valve3]>=1
-    GPIO,13,1
+    GPIO,14,1
     Publish "Podlewacz/state", "Valve 3 open"
     if [valves0#valve3]<2000
       TimerSet,3,[valves0#valve3]
@@ -66,9 +66,9 @@ on Rules#Timer=2 do
 endon
 
 on Rules#Timer=3 do
-  GPIO,13,0
+  GPIO,14,0
   if [valves0#valve4]>=1
-    GPIO,15,1
+    GPIO,12,1
     Publish "Podlewacz/state", "Valve 4 open"
     if [valves0#valve4]<2000
       TimerSet,4,[valves0#valve4]
@@ -82,7 +82,7 @@ on Rules#Timer=3 do
 endon
 
 on Rules#Timer=4 do
-    GPIO,15,0
+    GPIO,12,0
     Publish "Podlewacz/valve/state", 0
     Publish "Podlewacz/state", "Idle"
 endon

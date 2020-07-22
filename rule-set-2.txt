@@ -1,0 +1,54 @@
+on Rules#Timer=1 do
+  GPIO,5,0
+  if [valves0#valve2]>=1
+    GPIO,4,1
+    Publish "Podlewacz/state", "Valve 2 open"
+    if [valves0#valve2]<2000
+      TimerSet,2,[valves0#valve2]
+    else
+      TimerSet,2,2000
+      TimerSet,2,3
+    endif
+  else
+    Publish "Podlewacz/state", "Valve 2 skipped"
+    TimerSet,2,3
+  endif
+endon
+
+on Rules#Timer=2 do
+  GPIO,4,0
+  if [valves0#valve3]>=1
+    GPIO,14,1
+    Publish "Podlewacz/state", "Valve 3 open"
+    if [valves0#valve3]<2000
+      TimerSet,3,[valves0#valve3]
+    else
+      TimerSet,3,2000
+    endif
+  else
+    Publish "Podlewacz/state", "Valve 3 skipped"
+    TimerSet,3,3
+  endif
+endon
+
+on Rules#Timer=3 do
+  GPIO,14,0
+  if [valves0#valve4]>=1
+    GPIO,12,1
+    Publish "Podlewacz/state", "Valve 4 open"
+    if [valves0#valve4]<2000
+      TimerSet,4,[valves0#valve4]
+    else
+      TimerSet,4,2000
+    endif
+  else
+    Publish "Podlewacz/state", "Valve 4 skipped"
+    TimerSet,4,3
+  endif
+endon
+
+on Rules#Timer=4 do
+    GPIO,12,0
+    Publish "Podlewacz/valve/state", 0
+    Publish "Podlewacz/state", "Idle"
+endon
